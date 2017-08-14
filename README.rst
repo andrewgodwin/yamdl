@@ -122,6 +122,7 @@ Todo
 
 Here's a short list of things I'd like to get done before a 1.0:
 
+* Maybe replace the ``__yamdl__`` attribute with something nicer.
 * Support for Python versions before 3.4, either by using a global SQLite ``:memory:`` instance with thread locking or by supporting disk databases with a wipe phase.
 * Include YAML files in the Django auto-reloader so editing them loads changes in development.
 * Potentially load changes to flat files in production using mtime checking.
