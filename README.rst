@@ -1,6 +1,12 @@
 yamdl
 =====
 
+.. image:: https://img.shields.io/pypi/v/yamdl.svg
+    :target: https://pypi.python.org/pypi/yamdl
+
+.. image:: https://img.shields.io/pypi/l/yamdl.svg
+    :target: https://pypi.python.org/pypi/yamdl
+
 Lets you store instances of Django models as flat files (simplified fixtures).
 For when you want to store content in a Git repo, but still want to be able to
 use the normal Django ORM methods and shortcut functions.
