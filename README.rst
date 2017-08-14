@@ -13,6 +13,17 @@ dealing with static files (rather than custom code to load them directly).
 It does not persist changes to the models back into files - this is purely for
 authoring content in a text editor and using it via Django.
 
+Due to Python limitations yamdl currently only works on **Python 3.4** and up.
+
+
+Why not use normal fixtures?
+----------------------------
+
+They're not only a little verbose, but they need to be loaded into a non-memory
+database (slower) and you need lots of logic to work out if you should update
+or delete existing entries. They're still a better solution for anything that
+has a lot of data or which needs JOINs, though.
+
 
 Installation
 ------------
