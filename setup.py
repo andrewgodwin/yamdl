@@ -21,6 +21,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'Django>=1.11',
+        'pyyaml>=3.12',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
