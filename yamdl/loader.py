@@ -48,7 +48,7 @@ class ModelLoader(object):
                 model_name,
             ))
         # Read it into memory
-        with open(file_path, "r") as fh:
+        with open(file_path, "r", encoding="utf8") as fh:
             fixture_data = yaml.safe_load(fh)
         # Write it into our fixtures storage
         if isinstance(fixture_data, list):
