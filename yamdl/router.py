@@ -12,12 +12,15 @@ class YamdlRouter(object):
     def __init__(self):
         self.yamdl_app = apps.get_app_config("yamdl")
 
+    def _is_yamdl(self, obj):
+        return getattr(obj, "__yamdl__", False)
+
     def db_for_read(self, model, **hints):
-        if getattr(model, "__yamdl__", False):
+        if self._is_yamdl(model):
             return getattr(settings, "YAMDL_DATABASE_ALIAS", self.DEFAULT_DB_ALIAS)
 
     def db_for_write(self, model, **hints):
-        if getattr(model, "__yamdl__", False):
+        if self._is_yamdl(model):
             if self.yamdl_app.loaded:
                 raise RuntimeError("You cannot write to Yamdl-backed models")
             else:
