@@ -1,7 +1,7 @@
-from django.apps import apps
-
 import os.path
+
 import yaml
+from django.apps import apps
 
 
 class ModelLoader(object):
@@ -26,7 +26,11 @@ class ModelLoader(object):
             # First level should be folders named after models
             for model_folder in os.listdir(directory):
                 folder_path = os.path.join(directory, model_folder)
-                if "." in model_folder and not model_folder.startswith(".") and os.path.isdir(folder_path):
+                if (
+                    "." in model_folder
+                    and not model_folder.startswith(".")
+                    and os.path.isdir(folder_path)
+                ):
                     # Second level should be files
                     for filename in os.listdir(folder_path):
                         file_path = os.path.join(folder_path, filename)
@@ -43,10 +47,13 @@ class ModelLoader(object):
         try:
             model_class = self.managed_models[model_name]
         except KeyError:
-            raise ValueError("Cannot load yamdl fixture %s - the model name %s is not managed." % (
-                file_path,
-                model_name,
-            ))
+            raise ValueError(
+                "Cannot load yamdl fixture %s - the model name %s is not managed."
+                % (
+                    file_path,
+                    model_name,
+                )
+            )
         # Read it into memory
         with open(file_path, "r", encoding="utf8") as fh:
             fixture_data = yaml.safe_load(fh)
@@ -57,7 +64,9 @@ class ModelLoader(object):
         elif isinstance(fixture_data, dict):
             self.load_fixture(model_class, fixture_data)
         else:
-            raise ValueError("Cannot load yamdl fixture %s - not a dict or list." % file_path)
+            raise ValueError(
+                "Cannot load yamdl fixture %s - not a dict or list." % file_path
+            )
 
     def load_fixture(self, model_class, data):
         """
@@ -83,6 +92,4 @@ class ModelLoader(object):
         with self.connection.schema_editor() as editor:
             for model in self.managed_models.values():
                 editor.create_model(model)
-        print("Created yamdl schema for %s" % (
-            ", ".join(self.managed_models.keys()),
-        ))
+        print("Created yamdl schema for %s" % (", ".join(self.managed_models.keys()),))
