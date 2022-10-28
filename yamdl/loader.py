@@ -35,25 +35,27 @@ class ModelLoader(object):
                     for filename in os.listdir(folder_path):
                         file_path = os.path.join(folder_path, filename)
                         if filename.endswith(".yaml") and os.path.isfile(file_path):
-                            self.load_file(model_folder.lower(), file_path)
+                            self.load_yaml_file(model_folder.lower(), file_path)
+                        elif filename.endswith(".md") and os.path.isfile(file_path):
+                            self.load_markdown_file(model_folder.lower(), file_path)
         # Print result
         print("Loaded %s yamdl fixtures." % self.loaded)
 
-    def load_file(self, model_name, file_path):
+    def get_model_class(self, model_name):
+        # Make sure it's for a valid model
+        try:
+            return self.managed_models[model_name]
+        except KeyError:
+            raise ValueError(
+                "Cannot load yamdl fixture - the model name %s is not managed."
+                % (model_name,)
+            )
+
+    def load_yaml_file(self, model_name, file_path):
         """
         Loads a single file of fixtures.
         """
-        # Make sure it's for a valid model
-        try:
-            model_class = self.managed_models[model_name]
-        except KeyError:
-            raise ValueError(
-                "Cannot load yamdl fixture %s - the model name %s is not managed."
-                % (
-                    file_path,
-                    model_name,
-                )
-            )
+        model_class = self.get_model_class(model_name)
         # Read it into memory
         with open(file_path, "r", encoding="utf8") as fh:
             fixture_data = yaml.safe_load(fh)
@@ -67,6 +69,30 @@ class ModelLoader(object):
             raise ValueError(
                 "Cannot load yamdl fixture %s - not a dict or list." % file_path
             )
+
+    def load_markdown_file(self, model_name, file_path):
+        """
+        Loads a markdown-hybrid file (yaml, then ---, then markdown).
+        """
+        model_class = self.get_model_class(model_name)
+        with open(file_path, "r", encoding="utf8") as fh:
+            # Read line by line until we hit the document separator
+            yaml_data = ""
+            for line in fh:
+                if line.strip() == "---":
+                    break
+                else:
+                    yaml_data += line
+            else:
+                raise ValueError(
+                    "Markdown hybrid file contains no document separator (---)"
+                )
+            fixture_data = yaml.safe_load(yaml_data)
+            if not isinstance(fixture_data, dict):
+                raise ValueError("Markdown hybrid header is not a YAML dict")
+            # The rest goes into "content"
+            fixture_data["content"] = fh.read()
+            self.load_fixture(model_class, fixture_data)
 
     def load_fixture(self, model_class, data):
         """
