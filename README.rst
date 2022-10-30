@@ -13,13 +13,11 @@ use the normal Django ORM methods and shortcut functions.
 
 It works by loading the data into an in-memory SQLite database on startup, and
 then serving queries from there. This means it adds a little time to your app's
-boot, and slightly more RAM usage, but with the advantage of a much easier time
-dealing with static files (rather than custom code to load them directly).
+boot, but versus static files, it still lets you write queries and have dynamic
+views, while all being incredibly fast as queries return in microseconds.
 
 It does not persist changes to the models back into files - this is purely for
 authoring content in a text editor and using it via Django.
-
-Due to Python limitations yamdl currently only works on **Python 3.4** and up.
 
 
 Why not use normal fixtures?
@@ -27,9 +25,7 @@ Why not use normal fixtures?
 
 They're not only a little verbose, but they need to be loaded into a non-memory
 database (slower) and you need lots of logic to work out if you should update
-or delete existing entries. They're still a better solution for anything that
-has a lot of data or which needs JOINs, though.
-
+or delete existing entries.
 
 Installation
 ------------
@@ -46,8 +42,7 @@ Then, add it to ``INSTALLED_APPS``::
         ...
     ]
 
-Then, add the in-memory database to ``DATABASES`` (note that you must have at
-least **Python 3.4** to have a SQlite module that understands shared memory URIs)::
+Then, add the in-memory database to ``DATABASES``::
 
     DATABASES = {
         ...
@@ -118,17 +113,27 @@ Or a single model instance at the top level, like this::
     slides_url: https://speakerdeck.com/andrewgodwin/horrors-of-distributed-systems
     video_url: https://www.youtube.com/watch?v=jx1Hkxe64Xs
 
-When you start up Django, as either ``runserver`` or in production, it will read the
-YAML files and load them into an in-memory database and then let you query them
-using all the standard ORM stuff.
+You can also define a Markdown document (ending in ``.md``) below a document
+separator, and it will be loaded into the column called ``content``::
 
+    date: 2022-01-18 21:00:00+00:00
+    image: blog/2022/241.jpg
+    image_expand: true
+    section: van-build
+    slug: planning-a-van
+    title: Planning A Van
 
-Todo
-----
+    ---
 
-Here's a short list of things I'd like to get done before a 1.0:
+    What's In A Van?
+    ----------------
 
-* Maybe replace the ``__yamdl__`` attribute with something nicer.
-* Support for Python versions before 3.4, either by using a global SQLite ``:memory:`` instance with thread locking or by supporting disk databases with a wipe phase.
-* Include YAML files in the Django auto-reloader so editing them loads changes in development.
-* Potentially load changes to flat files in production using mtime checking.
+    So, I have decided to embark on my biggest project to date (and probably for a while, unless I finally get somewhere to build a cabin) - building myself a camper van, from scratch. Well, from an empty cargo van, anyway.
+
+Files can be nested at any level under their model directory, so you can group
+the files together in directories (for example, blog posts by year) if you
+want.
+
+The files are also added to the Django autoreloader, so if you are using the
+development server, it will reload as you edit the files (so you can see
+changes reflected live - they are only read on server start).
