@@ -31,15 +31,23 @@ class ModelLoader(object):
                     and not model_folder.startswith(".")
                     and os.path.isdir(folder_path)
                 ):
-                    # Second level should be files
-                    for filename in os.listdir(folder_path):
-                        file_path = os.path.join(folder_path, filename)
-                        if filename.endswith(".yaml") and os.path.isfile(file_path):
-                            self.load_yaml_file(model_folder.lower(), file_path)
-                        elif filename.endswith(".md") and os.path.isfile(file_path):
-                            self.load_markdown_file(model_folder.lower(), file_path)
+                    # Second level should be files, or more folders
+                    self.load_folder_files(model_folder.lower(), folder_path)
         # Print result
         print("Loaded %s yamdl fixtures." % self.loaded)
+
+    def load_folder_files(self, model_name, folder_path):
+        """
+        Loads a folder full of either fixtures or other files
+        """
+        for filename in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, filename)
+            if filename.endswith(".yaml") and os.path.isfile(file_path):
+                self.load_yaml_file(model_name, file_path)
+            elif filename.endswith(".md") and os.path.isfile(file_path):
+                self.load_markdown_file(model_name, file_path)
+            elif os.path.isdir(file_path):
+                self.load_folder_files(model_name, file_path)
 
     def get_model_class(self, model_name):
         # Make sure it's for a valid model
@@ -84,8 +92,11 @@ class ModelLoader(object):
                 else:
                     yaml_data += line
             else:
+                if not yaml_data:
+                    # Empty file.
+                    return
                 raise ValueError(
-                    "Markdown hybrid file contains no document separator (---)"
+                    f"Markdown hybrid file {file_path} contains no document separator (---)"
                 )
             fixture_data = yaml.safe_load(yaml_data)
             if not isinstance(fixture_data, dict):

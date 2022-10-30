@@ -4,6 +4,7 @@ from django.apps import AppConfig
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import connections
+from django.utils.autoreload import autoreload_started
 
 from .loader import ModelLoader
 
@@ -54,3 +55,10 @@ class YamdlConfig(AppConfig):
             self.loader = ModelLoader(self.connection, settings.YAMDL_DIRECTORIES)
             self.loader.load()
             self.loaded = True
+            # Add autoreload watches for our files
+            autoreload_started.connect(self.autoreload_ready)
+
+    def autoreload_ready(self, sender, **kwargs):
+        for directory in settings.YAMDL_DIRECTORIES:
+            sender.watch_dir(directory, "**/*.yaml")
+            sender.watch_dir(directory, "**/*.md")
