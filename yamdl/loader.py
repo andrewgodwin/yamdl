@@ -27,12 +27,12 @@ class ModelLoader(object):
             for model_folder in os.listdir(directory):
                 folder_path = os.path.join(directory, model_folder)
                 if (
-                    "." in model_folder
-                    and not model_folder.startswith(".")
-                    and os.path.isdir(folder_path)
+                    os.path.isdir(folder_path)
+                    and model_folder in self.managed_directories
                 ):
+                    model = self.managed_directories[model_folder]
                     # Second level should be files, or more folders
-                    self.load_folder_files(model_folder.lower(), folder_path)
+                    self.load_folder_files(model._meta.label_lower, folder_path)
         # Print result
         print("Loaded %s yamdl fixtures." % self.loaded)
 
@@ -125,10 +125,13 @@ class ModelLoader(object):
         """
         # Go through and collect the models
         self.managed_models = {}
+        self.managed_directories = {}
         for app in apps.get_app_configs():
             for model in app.get_models():
                 if getattr(model, "__yamdl__", False):
+                    directory = getattr(model, "__yamdl_directory__", model._meta.label_lower)
                     self.managed_models[model._meta.label_lower] = model
+                    self.managed_directories[directory] = model
         # Make the tables in the database
         with self.connection.schema_editor() as editor:
             for model in self.managed_models.values():
