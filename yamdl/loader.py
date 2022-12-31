@@ -100,7 +100,8 @@ class ModelLoader(object):
                 )
             fixture_data = yaml.safe_load(yaml_data)
             if not isinstance(fixture_data, dict):
-                raise ValueError("Markdown hybrid header is not a YAML dict")
+                _type = type(fixture_data).__name__
+                raise ValueError(f"Markdown hybrid header is not a YAML dict, but {_type}")
             # The rest goes into "content"
             fixture_data["content"] = fh.read()
             self.load_fixture(model_class, fixture_data)
