@@ -88,6 +88,9 @@ class ModelLoader(object):
             yaml_data = ""
             for line in fh:
                 if line.strip() == "---":
+                    if not yaml_data:
+                        # File started with "---"
+                        continue
                     break
                 else:
                     yaml_data += line
