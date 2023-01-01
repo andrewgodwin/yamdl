@@ -114,7 +114,10 @@ class ModelLoader(object):
         Loads a single fixture from a dict object.
         """
         # Make an instance of the model, then save it
-        instance = model_class(**data)
+        if hasattr(model_class, "from_yaml"):
+            instance = model_class.from_yaml(**data)
+        else:
+            instance = model_class(**data)
         instance.save(using=self.connection.alias)
         self.loaded += 1
 
