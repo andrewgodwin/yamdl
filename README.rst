@@ -86,6 +86,14 @@ the format ``appname.modelname``, and then YAML files ending in ``.yaml``::
                 2017.yaml
                 2016.yaml
 
+You can override the expected directory name by setting to the expected
+directory name instead::
+
+    class MyModel(models.Model):
+        ...
+        __yamdl__ = True
+        __yamdl_directory__ = "talks"
+
 Within those YAML files, you can define either a list of model instances, like
 this::
 
