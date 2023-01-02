@@ -1,4 +1,3 @@
-import os.path
 from pathlib import Path
 
 import yaml
@@ -25,15 +24,14 @@ class ModelLoader(object):
         # Scan content directories
         for directory in self.directories:
             # First level should be folders named after models
-            for model_folder in os.listdir(directory):
-                folder_path = os.path.join(directory, model_folder)
+            for model_folder in Path(directory).iterdir():
                 if (
-                    os.path.isdir(folder_path)
-                    and model_folder in self.managed_directories
+                    model_folder.is_dir()
+                    and model_folder.name in self.managed_directories
                 ):
-                    model = self.managed_directories[model_folder]
+                    model = self.managed_directories[model_folder.name]
                     # Second level should be files, or more folders
-                    self.load_folder_files(model._meta.label_lower, Path(folder_path))
+                    self.load_folder_files(model._meta.label_lower, model_folder)
         # Print result
         print("Loaded %s yamdl fixtures." % self.loaded)
 
