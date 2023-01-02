@@ -1,4 +1,4 @@
-import os.path
+from pathlib import Path
 
 import yaml
 from django.apps import apps
@@ -24,30 +24,28 @@ class ModelLoader(object):
         # Scan content directories
         for directory in self.directories:
             # First level should be folders named after models
-            for model_folder in os.listdir(directory):
-                folder_path = os.path.join(directory, model_folder)
+            for model_folder in Path(directory).iterdir():
                 if (
-                    os.path.isdir(folder_path)
-                    and model_folder in self.managed_directories
+                    model_folder.is_dir()
+                    and model_folder.name in self.managed_directories
                 ):
-                    model = self.managed_directories[model_folder]
+                    model = self.managed_directories[model_folder.name]
                     # Second level should be files, or more folders
-                    self.load_folder_files(model._meta.label_lower, folder_path)
+                    self.load_folder_files(model._meta.label_lower, model_folder)
         # Print result
         print("Loaded %s yamdl fixtures." % self.loaded)
 
-    def load_folder_files(self, model_name, folder_path):
+    def load_folder_files(self, model_name, folder_path: Path):
         """
         Loads a folder full of either fixtures or other files
         """
-        for filename in os.listdir(folder_path):
-            file_path = os.path.join(folder_path, filename)
-            if filename.endswith(".yaml") and os.path.isfile(file_path):
-                self.load_yaml_file(model_name, file_path)
-            elif filename.endswith(".md") and os.path.isfile(file_path):
-                self.load_markdown_file(model_name, file_path)
-            elif os.path.isdir(file_path):
-                self.load_folder_files(model_name, file_path)
+        for filename in folder_path.iterdir():
+            if filename.is_dir():
+                self.load_folder_files(model_name, filename)
+            elif filename.suffix in [".yml", ".yaml"] and filename.is_file():
+                self.load_yaml_file(model_name, filename)
+            elif filename.suffix in [".md", ".markdown"] and filename.is_file():
+                self.load_markdown_file(model_name, filename)
 
     def get_model_class(self, model_name):
         # Make sure it's for a valid model
@@ -59,13 +57,13 @@ class ModelLoader(object):
                 % (model_name,)
             )
 
-    def load_yaml_file(self, model_name, file_path):
+    def load_yaml_file(self, model_name, file_path: Path):
         """
         Loads a single file of fixtures.
         """
         model_class = self.get_model_class(model_name)
         # Read it into memory
-        with open(file_path, "r", encoding="utf8") as fh:
+        with file_path.open(mode="r", encoding="utf8") as fh:
             fixture_data = yaml.safe_load(fh)
         # Write it into our fixtures storage
         if isinstance(fixture_data, list):
@@ -78,12 +76,12 @@ class ModelLoader(object):
                 "Cannot load yamdl fixture %s - not a dict or list." % file_path
             )
 
-    def load_markdown_file(self, model_name, file_path):
+    def load_markdown_file(self, model_name, file_path: Path):
         """
         Loads a markdown-hybrid file (yaml, then ---, then markdown).
         """
         model_class = self.get_model_class(model_name)
-        with open(file_path, "r", encoding="utf8") as fh:
+        with file_path.open(mode="r", encoding="utf8") as fh:
             # Read line by line until we hit the document separator
             yaml_data = ""
             for line in fh:
