@@ -10,6 +10,9 @@ class ModelLoader(object):
     a database (designed for an in-memory one due to PK removal etc.)
     """
 
+    EXT_MARKDOWN = [".md", ".markdown"]
+    EXT_YAML = [".yml", ".yaml"]
+
     def __init__(self, connection, directories):
         self.connection = connection
         self.directories = directories
@@ -42,9 +45,9 @@ class ModelLoader(object):
         for filename in folder_path.iterdir():
             if filename.is_dir():
                 self.load_folder_files(model_name, filename)
-            elif filename.suffix in [".yml", ".yaml"] and filename.is_file():
+            elif filename.suffix in self.EXT_YAML and filename.is_file():
                 self.load_yaml_file(model_name, filename)
-            elif filename.suffix in [".md", ".markdown"] and filename.is_file():
+            elif filename.suffix in self.EXT_MARKDOWN and filename.is_file():
                 self.load_markdown_file(model_name, filename)
 
     def get_model_class(self, model_name):

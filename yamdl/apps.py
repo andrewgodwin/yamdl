@@ -60,5 +60,7 @@ class YamdlConfig(AppConfig):
 
     def autoreload_ready(self, sender, **kwargs):
         for directory in settings.YAMDL_DIRECTORIES:
-            sender.watch_dir(directory, "**/*.yaml")
-            sender.watch_dir(directory, "**/*.md")
+            for ext in self.loader.EXT_MARKDOWN:
+                sender.watch_dir(directory, f"**/*{ext}")
+            for ext in self.loader.EXT_YAML:
+                sender.watch_dir(directory, f"**/*{ext}")
