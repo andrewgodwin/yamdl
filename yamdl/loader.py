@@ -6,6 +6,7 @@ from django.apps import apps
 
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class ModelLoader(object):
@@ -39,7 +40,7 @@ class ModelLoader(object):
                     model = self.managed_directories[model_folder.name]
                     # Second level should be files, or more folders
                     self.load_folder_files(model._meta.label_lower, model_folder)
-        logger.debug("Loaded %d yamdl fixtures.", self.loaded)
+        logger.info("Loaded %d yamdl fixtures.", self.loaded)
 
     def load_folder_files(self, model_name, folder_path: Path):
         """
@@ -143,4 +144,4 @@ class ModelLoader(object):
         with self.connection.schema_editor() as editor:
             for model in self.managed_models.values():
                 editor.create_model(model)
-        logger.debug("Created yamdl schema for %s" % (", ".join(self.managed_models.keys()),))
+        logger.info("Created yamdl schema for %s" % (", ".join(self.managed_models.keys()),))
