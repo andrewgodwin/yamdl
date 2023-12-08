@@ -1,4 +1,5 @@
 import os
+import warnings
 
 from django.apps import AppConfig
 from django.conf import settings
@@ -53,8 +54,13 @@ class YamdlConfig(AppConfig):
                     )
             # Read the fixtures into memory
             self.loader = ModelLoader(self.connection, settings.YAMDL_DIRECTORIES)
-            self.loader.load()
+            with warnings.catch_warnings():
+                # Django doesn't like running DB queries during app initialization
+                warnings.filterwarnings("ignore", module="django.db", category=RuntimeError)
+                self.loader.load()
+
             self.loaded = True
+
             # Add autoreload watches for our files
             autoreload_started.connect(self.autoreload_ready)
 
