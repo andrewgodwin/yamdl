@@ -22,6 +22,12 @@ class ModelLoader(object):
         self.connection = connection
         self.directories = directories
 
+    def get_content_field(self, model_class):
+        """
+        Determine which field is used to store file content
+        """
+        return "content"
+
     def load(self):
         """
         Loads everything
@@ -111,7 +117,7 @@ class ModelLoader(object):
                 _type = type(fixture_data).__name__
                 raise ValueError(f"Markdown hybrid header is not a YAML dict, but {_type}")
             # The rest goes into "content"
-            fixture_data["content"] = fh.read()
+            fixture_data[self.get_content_field(model_class)] = fh.read()
             self.load_fixture(model_class, fixture_data, file_path)
 
     def load_fixture(self, model_class, data, file_path: Path):
