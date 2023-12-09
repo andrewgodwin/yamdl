@@ -75,9 +75,9 @@ class ModelLoader(object):
         # Write it into our fixtures storage
         if isinstance(fixture_data, list):
             for fixture in fixture_data:
-                self.load_fixture(model_class, fixture)
+                self.load_fixture(model_class, fixture, file_path)
         elif isinstance(fixture_data, dict):
-            self.load_fixture(model_class, fixture_data)
+            self.load_fixture(model_class, fixture_data, file_path)
         else:
             raise ValueError(
                 "Cannot load yamdl fixture %s - not a dict or list." % file_path
@@ -112,9 +112,9 @@ class ModelLoader(object):
                 raise ValueError(f"Markdown hybrid header is not a YAML dict, but {_type}")
             # The rest goes into "content"
             fixture_data["content"] = fh.read()
-            self.load_fixture(model_class, fixture_data)
+            self.load_fixture(model_class, fixture_data, file_path)
 
-    def load_fixture(self, model_class, data):
+    def load_fixture(self, model_class, data, file_path: Path):
         """
         Loads a single fixture from a dict object.
         """
