@@ -52,13 +52,15 @@ class ModelLoader(object):
         """
         Loads a folder full of either fixtures or other files
         """
+        model_class = self.get_model_class(model_name)
+
         for filename in folder_path.iterdir():
             if filename.is_dir():
-                self.load_folder_files(model_name, filename)
+                self.load_folder_files(model_class, filename)
             elif filename.suffix in self.EXT_YAML and filename.is_file():
-                self.load_yaml_file(model_name, filename)
+                self.load_yaml_file(model_class, filename)
             elif filename.suffix in self.EXT_MARKDOWN and filename.is_file():
-                self.load_markdown_file(model_name, filename)
+                self.load_markdown_file(model_class, filename)
 
     def get_model_class(self, model_name):
         # Make sure it's for a valid model
@@ -70,11 +72,10 @@ class ModelLoader(object):
                 % (model_name,)
             )
 
-    def load_yaml_file(self, model_name, file_path: Path):
+    def load_yaml_file(self, model_class, file_path: Path):
         """
         Loads a single file of fixtures.
         """
-        model_class = self.get_model_class(model_name)
         # Read it into memory
         with file_path.open(mode="r", encoding="utf8") as fh:
             fixture_data = yaml.safe_load(fh)
@@ -89,11 +90,10 @@ class ModelLoader(object):
                 "Cannot load yamdl fixture %s - not a dict or list." % file_path
             )
 
-    def load_markdown_file(self, model_name, file_path: Path):
+    def load_markdown_file(self, model_class, file_path: Path):
         """
         Loads a markdown-hybrid file (yaml, then ---, then markdown).
         """
-        model_class = self.get_model_class(model_name)
         with file_path.open(mode="r", encoding="utf8") as fh:
             # Read line by line until we hit the document separator
             yaml_data = ""
