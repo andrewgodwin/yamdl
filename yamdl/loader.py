@@ -22,6 +22,12 @@ class ModelLoader(object):
         self.connection = connection
         self.directories = directories
 
+    def get_content_field(self, model_class):
+        """
+        Determine which field is used to store file content
+        """
+        return "content"
+
     def load(self):
         """
         Loads everything
@@ -46,13 +52,15 @@ class ModelLoader(object):
         """
         Loads a folder full of either fixtures or other files
         """
+        model_class = self.get_model_class(model_name)
+
         for filename in folder_path.iterdir():
             if filename.is_dir():
-                self.load_folder_files(model_name, filename)
+                self.load_folder_files(model_class, filename)
             elif filename.suffix in self.EXT_YAML and filename.is_file():
-                self.load_yaml_file(model_name, filename)
+                self.load_yaml_file(model_class, filename)
             elif filename.suffix in self.EXT_MARKDOWN and filename.is_file():
-                self.load_markdown_file(model_name, filename)
+                self.load_markdown_file(model_class, filename)
 
     def get_model_class(self, model_name):
         # Make sure it's for a valid model
@@ -64,30 +72,28 @@ class ModelLoader(object):
                 % (model_name,)
             )
 
-    def load_yaml_file(self, model_name, file_path: Path):
+    def load_yaml_file(self, model_class, file_path: Path):
         """
         Loads a single file of fixtures.
         """
-        model_class = self.get_model_class(model_name)
         # Read it into memory
         with file_path.open(mode="r", encoding="utf8") as fh:
             fixture_data = yaml.safe_load(fh)
         # Write it into our fixtures storage
         if isinstance(fixture_data, list):
             for fixture in fixture_data:
-                self.load_fixture(model_class, fixture)
+                self.load_fixture(model_class, fixture, file_path)
         elif isinstance(fixture_data, dict):
-            self.load_fixture(model_class, fixture_data)
+            self.load_fixture(model_class, fixture_data, file_path)
         else:
             raise ValueError(
                 "Cannot load yamdl fixture %s - not a dict or list." % file_path
             )
 
-    def load_markdown_file(self, model_name, file_path: Path):
+    def load_markdown_file(self, model_class, file_path: Path):
         """
         Loads a markdown-hybrid file (yaml, then ---, then markdown).
         """
-        model_class = self.get_model_class(model_name)
         with file_path.open(mode="r", encoding="utf8") as fh:
             # Read line by line until we hit the document separator
             yaml_data = ""
@@ -111,10 +117,10 @@ class ModelLoader(object):
                 _type = type(fixture_data).__name__
                 raise ValueError(f"Markdown hybrid header is not a YAML dict, but {_type}")
             # The rest goes into "content"
-            fixture_data["content"] = fh.read()
-            self.load_fixture(model_class, fixture_data)
+            fixture_data[self.get_content_field(model_class)] = fh.read()
+            self.load_fixture(model_class, fixture_data, file_path)
 
-    def load_fixture(self, model_class, data):
+    def load_fixture(self, model_class, data, file_path: Path):
         """
         Loads a single fixture from a dict object.
         """

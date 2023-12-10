@@ -145,3 +145,5 @@ want.
 The files are also added to the Django autoreloader, so if you are using the
 development server, it will reload as you edit the files (so you can see
 changes reflected live - they are only read on server start).
+
+To customize how content files are loaded, you can set ``YAMDL_LOADER`` to a subclass of ``yamdl.loader.ModelLoader``, which will be imported and used instead.
