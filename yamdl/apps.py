@@ -55,7 +55,7 @@ class YamdlConfig(AppConfig):
                     )
 
             self.loader_class = import_string(getattr(settings, "YAMDL_LOADER", "yamdl.loader.ModelLoader"))
-            if not isinstance(self.loader_class, ModelLoader):
+            if not issubclass(self.loader_class, ModelLoader):
                 raise ImproperlyConfigured(
                     "YAMDL_LOADER must be an instance of ModelLoader"
                 )
