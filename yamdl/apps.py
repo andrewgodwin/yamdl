@@ -63,7 +63,7 @@ class YamdlConfig(AppConfig):
             self.loader = self.loader_class(self.connection, settings.YAMDL_DIRECTORIES)
             with warnings.catch_warnings():
                 # Django doesn't like running DB queries during app initialization
-                warnings.filterwarnings("ignore", module="django.db", category=RuntimeError)
+                warnings.filterwarnings("ignore", module="django.db", category=RuntimeWarning)
 
                 # Read the fixtures into memory
                 self.loader.load()
