@@ -55,7 +55,7 @@ class YamdlConfig(AppConfig):
                     )
 
             self.loader_class = import_string(getattr(settings, "YAMDL_LOADER", "yamdl.loader.ModelLoader"))
-            if not isinstance(self.loader_class, ModelLoader):
+            if not issubclass(self.loader_class, ModelLoader):
                 raise ImproperlyConfigured(
                     "YAMDL_LOADER must be an instance of ModelLoader"
                 )
@@ -63,7 +63,7 @@ class YamdlConfig(AppConfig):
             self.loader = self.loader_class(self.connection, settings.YAMDL_DIRECTORIES)
             with warnings.catch_warnings():
                 # Django doesn't like running DB queries during app initialization
-                warnings.filterwarnings("ignore", module="django.db", category=RuntimeError)
+                warnings.filterwarnings("ignore", module="django.db", category=RuntimeWarning)
 
                 # Read the fixtures into memory
                 self.loader.load()
