@@ -3,6 +3,7 @@ from pathlib import Path
 
 import yaml
 from django.apps import apps
+from django.db import transaction
 
 
 logger = logging.getLogger(__name__)
@@ -34,17 +35,19 @@ class ModelLoader(object):
         self.loaded = 0
         # Discover models we manage and load their schema into memory
         self.load_schema()
-        # Scan content directories
-        for directory in self.directories:
-            # First level should be folders named after models
-            for model_folder in Path(directory).iterdir():
-                if (
-                    model_folder.is_dir()
-                    and model_folder.name in self.managed_directories
-                ):
-                    model = self.managed_directories[model_folder.name]
-                    # Second level should be files, or more folders
-                    self.load_folder_files(model._meta.label_lower, model_folder)
+
+        with transaction.atomic(using=self.connection.alias):
+            # Scan content directories
+            for directory in self.directories:
+                # First level should be folders named after models
+                for model_folder in Path(directory).iterdir():
+                    if (
+                        model_folder.is_dir()
+                        and model_folder.name in self.managed_directories
+                    ):
+                        model = self.managed_directories[model_folder.name]
+                        # Second level should be files, or more folders
+                        self.load_folder_files(model._meta.label_lower, model_folder)
         logger.info("Loaded %d yamdl fixtures.", self.loaded)
 
     def load_folder_files(self, model_name, folder_path: Path):
@@ -125,10 +128,9 @@ class ModelLoader(object):
         """
         # Make an instance of the model, then save it
         if hasattr(model_class, "from_yaml"):
-            instance = model_class.from_yaml(**data)
+            model_class.from_yaml(**data)
         else:
-            instance = model_class(**data)
-        instance.save(using=self.connection.alias)
+            model_class.objects.create(**data)
         self.loaded += 1
 
     def load_schema(self):
