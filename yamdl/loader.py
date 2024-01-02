@@ -6,7 +6,6 @@ from django.apps import apps
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 class ModelLoader(object):
