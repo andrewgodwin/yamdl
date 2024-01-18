@@ -58,7 +58,7 @@ class ModelLoader(object):
 
         for filename in folder_path.iterdir():
             if filename.is_dir():
-                self.load_folder_files(model_class, filename)
+                self.load_folder_files(model_name, filename)
             elif filename.suffix in self.EXT_YAML and filename.is_file():
                 self.load_yaml_file(model_class, filename)
             elif filename.suffix in self.EXT_MARKDOWN and filename.is_file():
@@ -144,7 +144,7 @@ class ModelLoader(object):
         for app in apps.get_app_configs():
             for model in app.get_models():
                 if getattr(model, "__yamdl__", False):
-                    directory = getattr(model, "__yamdl_directory__", model._meta.label_lower)
+                    directory = getattr(model, "__yamdl_directory__", model._meta.label)
                     self.managed_models[model._meta.label_lower] = model
                     self.managed_directories[directory] = model
         # Make the tables in the database
